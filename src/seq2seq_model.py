@@ -24,7 +24,7 @@ Repeat the process until the decoder raises the EOS signal.
 
 
 class EncoderDecoderModel:
-    def __init__(self, out_steps, out_dims, n_units=50):
+    def __init__(self, out_steps, out_dims, n_units=256):
         self.out_steps = out_steps
         self.out_dims = out_dims
         self.encoder = LSTM(n_units, return_sequences=True, return_state=True)
@@ -43,7 +43,7 @@ class EncoderDecoderModel:
         decoder_input = tf.cast(decoder_input, tf.float32)
         expected_output = tf.cast(expected_output, tf.float32)
 
-        encoder_output, state_h, state_c = self.encoder(encoder_input)
+        _, state_h, state_c = self.encoder(encoder_input)
         encoder_state = [state_h, state_c]
 
         decoder_rnn_output, _, _ = self.decoder_rnn(decoder_input, initial_state=encoder_state)
@@ -81,7 +81,5 @@ class EncoderDecoderModel:
 
         return output
 
-    def cal_loss(self, decoder_perceptron, expected_model_output):
-        return tf.losses.mean_squared_error(labels=expected_model_output, predictions=decoder_perceptron)
-
-
+    def cal_loss(self, decoder_output, expected_output):
+        return tf.losses.softmax_cross_entropy(logits=decoder_output, onehot_labels=expected_output)

@@ -6,7 +6,7 @@ class DataProcessor:
     def __init__(self):
         return
 
-    def load_training_data(self, data_path, sep='\t', samples=2000):
+    def load_training_data(self, data_path, sep='\t', samples=5000):
         df = pd.read_csv(data_path, sep=sep, header=None, names=['input', 'target']).iloc[0:samples, :]
         assert (isinstance(df, pd.DataFrame))
 
