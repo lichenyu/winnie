@@ -31,25 +31,34 @@ class EncoderDecoderModel:
         self.decoder_rnn = LSTM(n_units, return_sequences=True, return_state=True)
         self.decoder_perceptron = Dense(self.out_dims, activation='softmax')
 
-    '''
-    Training Mode
-        data shape should be (samples, steps, features)
-            encoder_input: (samples, in_steps, in_dims)
-            decoder_input: (samples, out_steps, out_dims)
-    '''
     def __call__(self, encoder_input, decoder_input, expected_output):
+        """
+        Training Mode
+        :param encoder_input: shape should be (samples, in_steps, in_dims)
+        :param decoder_input: shape should be (samples, out_steps, out_dims)
+        :param expected_output: shape should be (samples, out_steps, out_dims)
+        :return: decoder_output, loss
+        """
+        encoder_input = tf.cast(encoder_input, tf.float32)
+        decoder_input = tf.cast(decoder_input, tf.float32)
+        expected_output = tf.cast(expected_output, tf.float32)
+
         encoder_output, state_h, state_c = self.encoder(encoder_input)
         encoder_state = [state_h, state_c]
 
         decoder_rnn_output, _, _ = self.decoder_rnn(decoder_input, initial_state=encoder_state)
         decoder_output = self.decoder_perceptron(decoder_rnn_output)
 
-        return self.cal_loss(decoder_output, expected_output)
+        return decoder_output, self.cal_loss(decoder_output, expected_output)
 
-    '''
-    Inferring Mode
-    '''
     def infer(self, encoder_input, sos_token, eos_token):
+        """
+        Inferring Mode
+        :param encoder_input: shape should be (samples, in_steps, in_dims)
+        :param sos_token:
+        :param eos_token:
+        :return:
+        """
         encoder_output, state_h, state_c = self.encoder(encoder_input)
         encoder_state = [state_h, state_c]
 
