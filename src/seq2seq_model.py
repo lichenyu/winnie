@@ -27,9 +27,10 @@ class EncoderDecoderModel:
     def __init__(self, out_steps, out_dims, n_units=256):
         self.out_steps = out_steps
         self.out_dims = out_dims
-        self.encoder = LSTM(n_units, return_sequences=True, return_state=True)
+        self.encoder = LSTM(n_units, return_state=True)
         self.decoder_rnn = LSTM(n_units, return_sequences=True, return_state=True)
-        self.decoder_perceptron = Dense(self.out_dims, activation='softmax')
+        # should not use softmax activation with tf.losses.softmax_cross_entropy
+        self.decoder_perceptron = Dense(self.out_dims)
 
     def __call__(self, encoder_input, decoder_input, expected_output):
         """
@@ -70,7 +71,7 @@ class EncoderDecoderModel:
         output = []
         for i in range(self.out_steps):
             decoder_rnn_output, h, c = self.decoder_rnn(input, initial_state=state)
-            decoder_output = self.decoder_perceptron(decoder_rnn_output)
+            decoder_output = tf.nn.softmax(self.decoder_perceptron(decoder_rnn_output))
             output.append(decoder_output)
             if decoder_output == eos_token:
                 break

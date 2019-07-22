@@ -1,9 +1,10 @@
 from src.translation_data_processor import DataProcessor
 from src.seq2seq_model import EncoderDecoderModel
 import tensorflow as tf
+import math
 
 
-def train(data_path, batch_size=64, n_epoch=200):
+def train(data_path, model_path, batch_size=64, n_epoch=200):
     """
     load data, train model
     :param data_path:
@@ -33,11 +34,15 @@ def train(data_path, batch_size=64, n_epoch=200):
     model_output, loss = model(encoder_input_tensor, decoder_input_tensor, decoder_output_tensor)
     optimizer = tf.train.AdamOptimizer()
     train_op = optimizer.minimize(loss)
+    # gradients, variables = zip(*optimizer.compute_gradients(loss))
+    # clipped_gradients, glob_norm = tf.clip_by_global_norm(gradients, 10)
+    # train_op = optimizer.apply_gradients(zip(clipped_gradients, variables))
 
-    import math
     n_batch = int(math.ceil(samples * 1. / batch_size))
 
     init = tf.global_variables_initializer()
+
+    saver = tf.train.Saver()
 
     with tf.Session() as sess:
         sess.run(init)
@@ -47,13 +52,17 @@ def train(data_path, batch_size=64, n_epoch=200):
                                                        decoder_output_placeholder: decoder_output})
         for epoch in range(n_epoch):
             for batch in range(n_batch):
-                l, _ = sess.run([loss, train_op])
-                print('epoch%d-batch%d: loss = %f' % (epoch, batch, l))
+                _, cur_loss = sess.run([train_op, loss])
+                # print('epoch%d-batch%d: loss = %f' % (epoch, batch, cur_loss))
+            print('epoch%d: loss = %f' % (epoch, cur_loss))
+
+        saver.save(sess, model_path)
 
 
 if __name__ == '__main__':
     training_data_path = '~/Desktop/cmn.txt'
+    model_out_path = '~/Desktop/model'
 
     # training
-    train(training_data_path)
+    train(training_data_path, model_out_path)
 
