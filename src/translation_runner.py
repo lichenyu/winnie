@@ -2,6 +2,7 @@ from src.translation_data_processor import DataProcessor
 from src.seq2seq_model import EncoderDecoderModel
 import tensorflow as tf
 import math
+import os
 
 
 def train(data_path, model_path, batch_size=64, n_epoch=200):
@@ -60,8 +61,12 @@ def train(data_path, model_path, batch_size=64, n_epoch=200):
 
 
 if __name__ == '__main__':
-    training_data_path = '~/Desktop/cmn.txt'
-    model_out_path = '~/Desktop/model'
+    working_dir = os.path.join(os.path.expanduser('~'), 'Desktop')
+    training_data_path = os.path.join(working_dir, 'cmn.txt')
+    model_out_dir = os.path.join(working_dir, 'model')
+    if not os.path.isdir(model_out_dir):
+        os.mkdir(model_out_dir)
+    model_out_path = os.path.join(model_out_dir, 'translation_model')
 
     # training
     train(training_data_path, model_out_path)
